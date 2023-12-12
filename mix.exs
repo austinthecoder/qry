@@ -9,7 +9,8 @@ defmodule Qry.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Simple query language for Elixir.",
-      package: package()
+      package: package(),
+      source_url: "https://github.com/austinthecoder/qry"
     ]
   end
 
@@ -24,7 +25,7 @@ defmodule Qry.MixProject do
   defp package do
     [
       licenses: ["Apache-2.0"],
-      links: []
+      links: %{"GitHub" => "https://github.com/austinthecoder/qry"}
     ]
   end
 end
