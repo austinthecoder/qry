@@ -7,6 +7,10 @@ defmodule Qry.Doc do
     defstruct [:field, :args, :docs]
   end
 
+  def parse(%Scalar{} = scalar_doc), do: scalar_doc
+
+  def parse(%MapOrList{} = map_or_list_doc), do: map_or_list_doc
+
   def parse(field) when is_atom(field), do: %Scalar{field: field, args: %{}}
 
   def parse({field, args}) when is_atom(field) and is_map(args) do

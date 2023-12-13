@@ -102,4 +102,12 @@ defmodule QryTest do
            ]
            |> Qry.query() == %{app: "Qry", orgs: [%{name: "Org2"}], session: nil}
   end
+
+  test "can pass context" do
+    assert Qry.query(:app, %{user_id: "u1"}) == %{app: "Qry with context"}
+
+    assert Qry.query([session: [user: [:id]]], %{user_id: "u1"}) == %{
+             session: %{user: %{id: "2 with context"}}
+           }
+  end
 end
