@@ -1,15 +1,21 @@
 defmodule Qry.Doc do
+  @moduledoc false
+
   defmodule Scalar do
+    @moduledoc false
+
     defstruct [:field, :args]
   end
 
-  defmodule MapOrList do
+  defmodule NonScalar do
+    @moduledoc false
+
     defstruct [:field, :args, :docs]
   end
 
   def parse(%Scalar{} = scalar_doc), do: scalar_doc
 
-  def parse(%MapOrList{} = map_or_list_doc), do: map_or_list_doc
+  def parse(%NonScalar{} = map_or_list_doc), do: map_or_list_doc
 
   def parse(field) when is_atom(field), do: %Scalar{field: field, args: %{}}
 
@@ -21,6 +27,6 @@ defmodule Qry.Doc do
 
   def parse({field, args, docs}) when is_atom(field) and is_map(args) and is_list(docs) do
     docs = Enum.map(docs, &parse/1)
-    %MapOrList{field: field, args: args, docs: docs}
+    %NonScalar{field: field, args: args, docs: docs}
   end
 end

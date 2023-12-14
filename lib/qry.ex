@@ -1,20 +1,40 @@
 defmodule Qry do
+  @moduledoc """
+  The main interface for querying.
+  """
+
   alias Qry.Doc
 
-  def query(docs), do: query(docs, %{})
+  @doc """
+  Evaluates documents, returning a map of results.
+
+  ## Examples
+
+      Qry.query(truck: [:make, :model])
+
+      %{
+        truck: %{
+          make: "Honda",
+          model: "Civic"
+        }
+      }
+
+  """
+  def query(docs, context \\ %{})
 
   def query([], _), do: %{}
 
   def query([doc | docs], context),
     do: doc |> Doc.parse() |> query(context) |> Map.merge(query(docs, context))
 
-  def query(%Doc.MapOrList{field: field, args: args, docs: docs}, context) do
+  def query(%Doc.NonScalar{field: field, args: args, docs: docs}, context) do
     value = fetch(field, args, context)
     %{field => query_for(value, docs, context)}
   end
 
-  def query(%Doc.Scalar{field: field, args: args}, context),
-    do: %{field => fetch(field, args, context)}
+  def query(%Doc.Scalar{field: field, args: args}, context) do
+    %{field => fetch(field, args, context)}
+  end
 
   def query(doc, context), do: doc |> Doc.parse() |> query(context)
 
@@ -38,7 +58,7 @@ defmodule Qry do
     %{field => value}
   end
 
-  defp query_for(map, %Doc.MapOrList{field: field, args: args, docs: docs}, context)
+  defp query_for(map, %Doc.NonScalar{field: field, args: args, docs: docs}, context)
        when is_map(map) do
     value = fetch(map, field, args, context)
     %{field => query_for(value, docs, context)}
@@ -74,7 +94,7 @@ defmodule Qry do
     end
   end
 
-  defp query_for(list, %Doc.MapOrList{field: field, args: args, docs: docs}, context)
+  defp query_for(list, %Doc.NonScalar{field: field, args: args, docs: docs}, context)
        when is_list(list) do
     subvalue_by_value = fetch(list, field, args, context)
 
