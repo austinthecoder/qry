@@ -11,7 +11,11 @@ defmodule Qry.MixProject do
       deps: deps(),
       description: "Simple query language for Elixir.",
       package: package(),
-      source_url: "https://github.com/austinthecoder/qry"
+      source_url: "https://github.com/austinthecoder/qry",
+      docs: [
+        main: "readme",
+        extras: ["README.md"]
+      ]
     ]
   end
 

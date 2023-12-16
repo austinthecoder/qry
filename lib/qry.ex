@@ -107,7 +107,7 @@ defmodule Qry do
 
   ##########
 
-  defp repo, do: Application.get_env(:g, :repo)
+  defp repo, do: Application.get_env(:qry, :repo)
 
   defp fetch(field, args, context), do: repo().fetch(field, args, context)
 

@@ -1,6 +1,10 @@
 defmodule QryTest do
   use ExUnit.Case
 
+  setup do
+    Application.put_env(:qry, :repo, Test.Repo)
+  end
+
   test "can query nothing" do
     assert Qry.query([]) == %{}
   end
