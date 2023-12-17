@@ -14,6 +14,8 @@ defmodule DocsTest do
   end
 
   defmodule Repo do
+    use Qry.Repo
+
     @project %Project{id: 1, name: "Qry"}
 
     @authors [
@@ -70,11 +72,9 @@ defmodule DocsTest do
   end
 
   test "examples in docs work" do
-    Application.put_env(:qry, :repo, Repo)
+    assert Repo.query(project: [:name]) == %{project: %{name: "Qry"}}
 
-    assert Qry.query(project: [:name]) == %{project: %{name: "Qry"}}
-
-    assert Qry.query(
+    assert Repo.query(
              project: [
                :name,
                authors: [:first_name, :last_name]
@@ -89,7 +89,7 @@ defmodule DocsTest do
              }
            }
 
-    assert Qry.query(
+    assert Repo.query(
              project: [
                :name,
                authors: [

@@ -12,7 +12,7 @@ Query your domain.
         ]
       ]
     ]
-    |> Qry.query()
+    |> MyRepo.query()
 
     %{
       project: %{
@@ -30,13 +30,23 @@ Query your domain.
 
 ## Setup
 
-    config :qry, repo: Repo
+    defmodule MyRepo do
+      use Qry.Repo
+
+      def fetch(field, args, context) do
+        ...
+      end
+
+      def fetch(parent, field, args, context) do
+        ...
+      end
+    end
 
 The repo must define two functions: `fetch/3` and `fetch/4`.
 
-`fetch/3` will receive a field, args, and context and should return the field data.
+`fetch/3` – Returns the field data.
 
-`fetch/4` will receive a parent, field, args, and context. If the parent is a list, it must return the a map of the field data keyed by each parent item.
+`fetch/4` – If the parent is a list, returns the a map of the field data keyed by each parent item. Otherwise returns the field data.
 
 ## Basic Example
 
@@ -45,6 +55,8 @@ The repo must define two functions: `fetch/3` and `fetch/4`.
     end
 
     defmodule Repo do
+      use Qry.Repo
+
       @project %Project{id: 1, name: "Qry"}
 
       def fetch(:project, _args, _context) do
@@ -52,7 +64,7 @@ The repo must define two functions: `fetch/3` and `fetch/4`.
       end
     end
 
-    iex> Qry.query(project: [:name])
+    iex> MyRepo.query(project: [:name])
     %{project: %{name: "Qry"}}
 
 Let's add an `:authors` association to `Project`:
@@ -77,7 +89,7 @@ Let's add an `:authors` association to `Project`:
       end
     end
 
-    iex> Qry.query(
+    iex> MyRepo.query(
       project: [
         :name,
         authors: [:first_name, :last_name]
@@ -137,7 +149,7 @@ Now let's add a `:links` association to `Person`:
       end
     end
 
-    iex> Qry.query(
+    iex> MyRepo.query(
       project: [
         :name,
         authors: [
@@ -176,33 +188,33 @@ A doc consists of a field (atom), args (map), and subdocs (list). A doc can be e
 
 A atom can be used for a field with no args or subdocs:
 
-    Qry.query(:project)
+    MyRepo.query(:project)
 
 If there are args or subdocs, a two-element tuple is used:
 
     # args only
-    Qry.query({:project, %{id: "p1"}})
+    MyRepo.query({:project, %{id: "p1"}})
 
     # subdocs only
-    Qry.query({:project, [:name]})
+    MyRepo.query({:project, [:name]})
 
 If there are both args and subdocs, a three-element tuple is used:
 
-    Qry.query({:project, %{id: "p1"}, [:name]})
+    MyRepo.query({:project, %{id: "p1"}, [:name]})
 
 Use a list for multiple docs:
 
-    Qry.query([:project, {:users, [:name]}])
+    MyRepo.query([:project, {:users, [:name]}])
 
 Note: For two-element tuples, Elixir affords us the keyword list syntax:
 
-    Qry.query(project: [name], users: [:name])
+    MyRepo.query(project: [name], users: [:name])
 
 ## Arguments
 
 A doc can contain args (see above). They are given to `fetch/3` as the second argument:
 
-    Qry.query(project: %{foo: "bar"})
+    MyRepo.query(project: %{foo: "bar"})
 
     def fetch(:project, args, _context) do
       # args are `%{foo: "bar"}`
@@ -211,7 +223,7 @@ A doc can contain args (see above). They are given to `fetch/3` as the second ar
 
 And are given to `fetch/4` as the third argument:
 
-    Qry.query(project: [authors: %{foo: "bar"}])
+    MyRepo.query(project: [authors: %{foo: "bar"}])
 
     def fetch(%Project{}, :authors, args, _context) do
       # args are `%{foo: "bar"}`
@@ -220,10 +232,10 @@ And are given to `fetch/4` as the third argument:
 
 ## Context
 
-You can provide a context (map) as the second argument to `Qry.query/2`. It defaults to an empty map. It is given to `fetch/3` and `fetch/4` as the last argument.
+You can provide a context (map) as the second argument to `MyRepo.query/2`. It defaults to an empty map. It is given to `fetch/3` and `fetch/4` as the last argument.
 
-    Qry.query(:project, %{user_id: 123})
-    Qry.query(project: [:authors], %{user_id: 123})
+    MyRepo.query(:project, %{user_id: 123})
+    MyRepo.query(project: [:authors], %{user_id: 123})
 
     def fetch(:project, _args, context) do
       # context is `%{user_id: 123}`

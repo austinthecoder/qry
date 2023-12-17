@@ -1,4 +1,6 @@
 defmodule Test.Repo do
+  use Qry.Repo
+
   defmodule Session do
     defstruct [:id, :user_id]
   end
