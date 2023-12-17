@@ -169,3 +169,68 @@ Now let's add a `:links` association to `Person`:
         ]
       }
     }
+
+## Documents
+
+A doc consists of a field (atom), args (map), and subdocs (list). A doc can be expressed as an atom, a two-element tuple, or a three-element tuple.
+
+A atom can be used for a field with no args or subdocs:
+
+    Qry.query(:project)
+
+If there are args or subdocs, a two-element tuple is used:
+
+    # args only
+    Qry.query({:project, %{id: "p1"}})
+
+    # subdocs only
+    Qry.query({:project, [:name]})
+
+If there are both args and subdocs, a three-element tuple is used:
+
+    Qry.query({:project, %{id: "p1"}, [:name]})
+
+Use a list for multiple docs:
+
+    Qry.query([:project, {:users, [:name]}])
+
+Note: For two-element tuples, Elixir affords us the keyword list syntax:
+
+    Qry.query(project: [name], users: [:name])
+
+## Arguments
+
+A doc can contain args (see above). They are given to `fetch/3` as the second argument:
+
+    Qry.query(project: %{foo: "bar"})
+
+    def fetch(:project, args, _context) do
+      # args are `%{foo: "bar"}`
+      ...
+    end
+
+And are given to `fetch/4` as the third argument:
+
+    Qry.query(project: [authors: %{foo: "bar"}])
+
+    def fetch(%Project{}, :authors, args, _context) do
+      # args are `%{foo: "bar"}`
+      ...
+    end
+
+## Context
+
+You can provide a context (map) as the second argument to `Qry.query/2`. It defaults to an empty map. It is given to `fetch/3` and `fetch/4` as the last argument.
+
+    Qry.query(:project, %{user_id: 123})
+    Qry.query(project: [:authors], %{user_id: 123})
+
+    def fetch(:project, _args, context) do
+      # context is `%{user_id: 123}`
+      ...
+    end
+
+    def fetch(%Project{}, :authors, _args, context) do
+      # context is `%{user_id: 123}`
+      ...
+    end
