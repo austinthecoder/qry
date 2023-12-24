@@ -34,6 +34,8 @@ defmodule Test.Repo do
 
   def fetch(:app, %{}, %{}), do: {:ok, "Qry"}
 
+  def fetch(:error, %{}, %{}), do: {:error, "error1"}
+
   def fetch(:session, %{no_user: true}, %{}), do: {:ok, sessions() |> Enum.find(&(!&1.user_id))}
 
   def fetch(:session, %{id: "s3"}, %{}), do: {:ok, sessions() |> Enum.find(&(&1.id == "s3"))}
@@ -66,6 +68,8 @@ defmodule Test.Repo do
   def fetch(%Session{id: "s1"}, :logins, %{}, %{}) do
     {:ok, [%Login{duration: 10}, %Login{duration: 20}]}
   end
+
+  def fetch(%Session{id: "s1"}, :error, %{}, %{}), do: {:error, "error2"}
 
   def fetch([%Org{id: "o1"} = w1, %Org{id: "o2"} = w2], :parts, %{serial: "2"}, %{}) do
     {:ok, %{w1 => [%Part{id: "p2", serial: "2"}], w2 => []}}
