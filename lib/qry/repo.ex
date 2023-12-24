@@ -4,7 +4,7 @@ defmodule Qry.Repo do
   """
 
   defmacro __using__([]) do
-    quote do
+    quote location: :keep do
       alias Qry.Doc
 
       @doc """
