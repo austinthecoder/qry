@@ -52,42 +52,52 @@ defmodule DocsTest do
     ]
 
     def fetch(:project, _args, _context) do
-      @project
+      {:ok, @project}
     end
 
     def fetch(%Project{} = project, :authors, _args, _context) do
-      @authors
-      |> Enum.filter(fn author ->
-        author.project_id == project.id
-      end)
+      authors =
+        @authors
+        |> Enum.filter(fn author ->
+          author.project_id == project.id
+        end)
+
+      {:ok, authors}
     end
 
     def fetch([%Person{} | _] = people, :links, _args, _context) do
-      people
-      |> Enum.reduce(%{}, fn person, acc ->
-        links = @links |> Enum.filter(fn link -> link.person_id == person.id end)
-        Map.put(acc, person, links)
-      end)
+      links =
+        people
+        |> Enum.reduce(%{}, fn person, acc ->
+          links = @links |> Enum.filter(fn link -> link.person_id == person.id end)
+          Map.put(acc, person, links)
+        end)
+
+      {:ok, links}
     end
   end
 
   test "examples in docs work" do
-    assert Repo.query(project: [:name]) == %{project: %{name: "Qry"}}
+    assert Repo.query(project: [:name]) == {:ok, %{project: %{name: "Qry"}}}
 
     assert Repo.query(
              project: [
                :name,
                authors: [:first_name, :last_name]
              ]
-           ) == %{
-             project: %{
-               name: "Qry",
-               authors: [
-                 %{first_name: "Austin", last_name: "Schneider"},
-                 %{first_name: "Sally", last_name: "Sue"}
-               ]
+           ) ==
+             {
+               :ok,
+               %{
+                 project: %{
+                   name: "Qry",
+                   authors: [
+                     %{first_name: "Austin", last_name: "Schneider"},
+                     %{first_name: "Sally", last_name: "Sue"}
+                   ]
+                 }
+               }
              }
-           }
 
     assert Repo.query(
              project: [
@@ -98,27 +108,29 @@ defmodule DocsTest do
                  links: [:name, :url]
                ]
              ]
-           ) == %{
-             project: %{
-               name: "Qry",
-               authors: [
-                 %{
-                   first_name: "Austin",
-                   last_name: "Schneider",
-                   links: [
-                     %{name: "GitHub", url: "https://github.com/austinthecoder"},
-                     %{name: "X", url: "https://twitter.com/austinthecoder"}
-                   ]
-                 },
-                 %{
-                   first_name: "Sally",
-                   last_name: "Sue",
-                   links: [
-                     %{name: "Website", url: "https://example.com/sally"}
-                   ]
-                 }
-               ]
-             }
-           }
+           ) ==
+             {:ok,
+              %{
+                project: %{
+                  name: "Qry",
+                  authors: [
+                    %{
+                      first_name: "Austin",
+                      last_name: "Schneider",
+                      links: [
+                        %{name: "GitHub", url: "https://github.com/austinthecoder"},
+                        %{name: "X", url: "https://twitter.com/austinthecoder"}
+                      ]
+                    },
+                    %{
+                      first_name: "Sally",
+                      last_name: "Sue",
+                      links: [
+                        %{name: "Website", url: "https://example.com/sally"}
+                      ]
+                    }
+                  ]
+                }
+              }}
   end
 end

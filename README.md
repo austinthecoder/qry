@@ -14,16 +14,19 @@ Query your domain.
     ]
     |> MyRepo.query()
 
-    %{
-      project: %{
-        name: "Qry",
-        author: %{
-          first_name: "Austin",
-          last_name: "Schneider",
-          links: [
-            %{name: "GitHub", url: "https://github.com/austinthecoder"},
-            %{name: "X", url: "https://twitter.com/austinthecoder"}
-          ]
+    {
+      :ok,
+      %{
+        project: %{
+          name: "Qry",
+          author: %{
+            first_name: "Austin",
+            last_name: "Schneider",
+            links: [
+              %{name: "GitHub", url: "https://github.com/austinthecoder"},
+              %{name: "X", url: "https://twitter.com/austinthecoder"}
+            ]
+          }
         }
       }
     }
@@ -60,12 +63,12 @@ The repo must define two functions: `fetch/3` and `fetch/4`.
       @project %Project{id: 1, name: "Qry"}
 
       def fetch(:project, _args, _context) do
-        @project
+        {:ok, @project}
       end
     end
 
     iex> MyRepo.query(project: [:name])
-    %{project: %{name: "Qry"}}
+    {:ok, %{project: %{name: "Qry"}}}
 
 Let's add an `:authors` association to `Project`:
 
@@ -82,10 +85,13 @@ Let's add an `:authors` association to `Project`:
       ]
 
       def fetch(%Project{} = project, :authors, _args, _context) do
-        @authors
-        |> Enum.filter(fn author ->
-          author.project_id == project.id
-        end)
+        authors =
+          @authors
+          |> Enum.filter(fn author ->
+            author.project_id == project.id
+          end)
+
+        {:ok, authors}
       end
     end
 
@@ -95,13 +101,16 @@ Let's add an `:authors` association to `Project`:
         authors: [:first_name, :last_name]
       ]
     )
-    %{
-      project: %{
-        name: "Qry",
-        authors: [
-          %{first_name: "Austin", last_name: "Schneider"},
-          %{first_name: "Sally", last_name: "Sue"}
-        ]
+    {
+      :ok,
+      %{
+        project: %{
+          name: "Qry",
+          authors: [
+            %{first_name: "Austin", last_name: "Schneider"},
+            %{first_name: "Sally", last_name: "Sue"}
+          ]
+        }
       }
     }
 
@@ -141,11 +150,14 @@ Now let's add a `:links` association to `Person`:
       ]
 
       def fetch([%Person{} | _] = people, :links, _args, _context) do
-        people
-        |> Enum.reduce(%{}, fn person, acc ->
-          links = @links |> Enum.filter(fn link -> link.person_id == person.id end)
-          Map.put(acc, person, links)
-        end)
+        links =
+          people
+          |> Enum.reduce(%{}, fn person, acc ->
+            links = @links |> Enum.filter(fn link -> link.person_id == person.id end)
+            Map.put(acc, person, links)
+          end)
+
+        {:ok, links}
       end
     end
 
@@ -159,26 +171,29 @@ Now let's add a `:links` association to `Person`:
         ]
       ]
     )
-    %{
-      project: %{
-        name: "Qry",
-        authors: [
-          %{
-            first_name: "Austin",
-            last_name: "Schneider",
-            links: [
-              %{name: "GitHub", url: "https://github.com/austinthecoder"},
-              %{name: "X", url: "https://twitter.com/austinthecoder"}
-            ]
-          },
-          %{
-            first_name: "Sally",
-            last_name: "Sue",
-            links: [
-              %{name: "Website", url: "https://example.com/sally"}
-            ]
-          }
-        ]
+    {
+      :ok,
+      %{
+        project: %{
+          name: "Qry",
+          authors: [
+            %{
+              first_name: "Austin",
+              last_name: "Schneider",
+              links: [
+                %{name: "GitHub", url: "https://github.com/austinthecoder"},
+                %{name: "X", url: "https://twitter.com/austinthecoder"}
+              ]
+            },
+            %{
+              first_name: "Sally",
+              last_name: "Sue",
+              links: [
+                %{name: "Website", url: "https://example.com/sally"}
+              ]
+            }
+          ]
+        }
       }
     }
 
