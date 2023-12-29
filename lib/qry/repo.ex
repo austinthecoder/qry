@@ -22,6 +22,10 @@ defmodule Qry.Repo do
           }
 
       """
+
+      @spec query(Doc.parsable_doc() | list(Doc.parsable_doc())) ::
+              {:ok, map()} | {:error | any()}
+
       def query(docs, context \\ %{})
 
       def query([], _), do: {:ok, %{}}
@@ -54,6 +58,12 @@ defmodule Qry.Repo do
       end
 
       def query(doc, context), do: doc |> Doc.parse() |> query(context)
+
+      @spec query_for(
+              nil | map() | list(),
+              Doc.doc() | list(Doc.doc()),
+              map()
+            ) :: {:ok, map() | list()} | {:error, any()}
 
       defp query_for(nil, _docs, _context), do: {:ok, nil}
 
