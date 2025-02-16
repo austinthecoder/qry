@@ -36,16 +36,18 @@ Query your domain.
     defmodule MyRepo do
       use Qry.Repo
 
+      @impl true
       def fetch(field, args, context) do
         ...
       end
 
+      @impl true
       def fetch(parent, field, args, context) do
         ...
       end
     end
 
-The repo must define two functions: `fetch/3` and `fetch/4`.
+The repo must define two callbacks: `fetch/3` and `fetch/4`.
 
 `fetch/3` – Returns the field data.
 
@@ -62,6 +64,7 @@ The repo must define two functions: `fetch/3` and `fetch/4`.
 
       @project %Project{id: 1, name: "Qry"}
 
+      @impl true
       def fetch(:project, _args, _context) do
         {:ok, @project}
       end

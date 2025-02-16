@@ -3,8 +3,19 @@ defmodule Qry.Repo do
   Defines a repository.
   """
 
+  @type parent :: any()
+  @type field :: atom()
+  @type args :: any()
+  @type context :: any()
+  @type fetch_result :: {:ok, any()} | {:error, any()}
+
+  @callback fetch(field(), args(), context()) :: fetch_result()
+  @callback fetch(parent(), field(), args(), context()) :: fetch_result()
+
   defmacro __using__([]) do
     quote location: :keep do
+      @behaviour Qry.Repo
+
       alias Qry.Doc
 
       @doc """
@@ -51,7 +62,9 @@ defmodule Qry.Repo do
       end
 
       def query(%Doc.Scalar{field: field, args: args}, context) do
-        case fetch(field, args, context) do
+        field
+        |> fetch(args, context)
+        |> case do
           {:ok, value} -> {:ok, %{field => value}}
           {:error, _} = result -> result
         end
@@ -83,7 +96,9 @@ defmodule Qry.Repo do
           value = Map.get(map, field)
           {:ok, %{field => value}}
         else
-          case fetch(map, field, args, context) do
+          map
+          |> fetch(field, args, context)
+          |> case do
             {:ok, value} -> {:ok, %{field => value}}
             {:error, _} = result -> result
           end
@@ -111,7 +126,7 @@ defmodule Qry.Repo do
              {:ok, list2} <- query_for(list, docs, context) do
           result =
             [list1, list2]
-            |> List.zip()
+            |> Enum.zip()
             |> Enum.map(fn {r1, r2} -> Map.merge(r1, r2) end)
 
           {:ok, result}
@@ -126,7 +141,9 @@ defmodule Qry.Repo do
           {:ok, result}
         else
           # todo: test
-          case fetch(list, field, args, context) do
+          list
+          |> fetch(field, args, context)
+          |> case do
             {:ok, subvalue_by_value} ->
               result = list |> Enum.map(fn value -> %{field => subvalue_by_value[value]} end)
               {:ok, result}
@@ -139,13 +156,16 @@ defmodule Qry.Repo do
 
       defp query_for(list, %Doc.NonScalar{field: field, args: args, docs: docs}, context)
            when is_list(list) do
-        case fetch(list, field, args, context) do
+        list
+        |> fetch(field, args, context)
+        |> case do
           {:ok, subvalue_by_value} ->
             list
             |> Enum.reduce_while({:ok, []}, fn value, acc ->
-              result = subvalue_by_value |> Map.get(value) |> query_for(docs, context)
-
-              case result do
+              subvalue_by_value
+              |> Map.get(value)
+              |> query_for(docs, context)
+              |> case do
                 {:ok, result} ->
                   {:ok, results} = acc
                   {:cont, {:ok, results ++ [%{field => result}]}}

@@ -26,8 +26,9 @@ defmodule Test.Repo do
   end
 
   ##########
-  # fetch(field, args)
+  # fetch(field, args, context)
 
+  @impl true
   def fetch(:app, %{active: true}, %{}), do: {:ok, "Qry"}
 
   def fetch(:app, %{}, %{user_id: "u1"}), do: {:ok, "Qry with context"}
@@ -47,8 +48,9 @@ defmodule Test.Repo do
   def fetch(:orgs, %{}, %{}), do: {:ok, orgs()}
 
   ##########
-  # fetch(parent, field, args)
+  # fetch(parent, field, args, context)
 
+  @impl true
   def fetch(%Session{id: "s1"}, :clicks, %{}, %{}), do: {:ok, 7}
 
   def fetch(%Session{id: "s1"}, :google_user_id, %{arg: "x"}, %{}), do: {:ok, "gu1"}
